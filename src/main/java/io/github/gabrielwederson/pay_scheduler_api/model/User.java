@@ -3,6 +3,7 @@ package io.github.gabrielwederson.pay_scheduler_api.model;
 import jakarta.persistence.*;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Objects;
 
 @Entity
@@ -23,6 +24,9 @@ public class User implements Serializable {
 
     @Column(name = "name", nullable = false)
     private String name;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<Account> accounts;
 
     public User() {
     }
@@ -57,6 +61,14 @@ public class User implements Serializable {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public List<Account> getAccounts() {
+        return accounts;
+    }
+
+    public void setAccounts(List<Account> accounts) {
+        this.accounts = accounts;
     }
 
     @Override
