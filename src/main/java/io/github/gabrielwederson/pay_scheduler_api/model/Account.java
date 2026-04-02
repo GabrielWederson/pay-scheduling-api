@@ -21,6 +21,7 @@ public class Account implements Serializable {
     private String numberAccount;
 
     @PositiveOrZero
+    @Column(name = "balance")
     private Double balance;
 
     @ManyToOne(fetch = FetchType.LAZY)
