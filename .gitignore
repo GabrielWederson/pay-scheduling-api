@@ -1,0 +1,91 @@
+
+
+# Environment / Secrets
+
+.env
+.env.*
+*.env
+*.local
+
+#  IDEs / Editors
+
+
+# IntelliJ
+
+.idea/
+*.iml
+
+# VS Code
+
+.vscode/
+
+# Eclipse
+
+.project
+.classpath
+.settings/
+
+# Java / Build
+
+target/
+build/
+out/
+*.class
+
+# Maven
+
+.mvn/wrapper/maven-wrapper.jar
+
+# Gradle
+
+.gradle/
+
+# Logs
+
+*.log
+
+
+# Docker
+
+docker-data/
+postgres_data/
+
+#  OS Files
+
+.DS_Store
+Thumbs.db
+
+# Test / Coverage
+
+
+coverage/
+*.coverage
+*.lcov
+
+# Temporary Files
+
+
+tmp/
+temp/
+*.tmp
+*.swp
+
+
+#  Keystores / Certs
+
+*.jks
+*.p12
+*.pem
+*.key
+
+
+#  Misc
+
+
+*.pid
+*.seed
+*.lock
+
+# docker compose
+docker-compose.yml
+docker-compose.override.yml
