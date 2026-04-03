@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.PositiveOrZero;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.Objects;
 
 @Entity
@@ -21,8 +22,8 @@ public class Account implements Serializable {
     private String numberAccount;
 
     @PositiveOrZero
-    @Column(name = "balance")
-    private Double balance;
+    @Column(name = "balance", precision = 10, scale = 2)
+    private BigDecimal balance;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
@@ -48,11 +49,11 @@ public class Account implements Serializable {
         this.numberAccount = numberAccount;
     }
 
-    public Double getBalance() {
+    public BigDecimal getBalance() {
         return balance;
     }
 
-    public void setBalance(Double balance) {
+    public void setBalance(BigDecimal balance) {
         this.balance = balance;
     }
 

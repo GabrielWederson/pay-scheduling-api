@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Positive;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
@@ -24,8 +25,8 @@ public class Scheduling implements Serializable {
     private String destinationAccount;
 
     @Positive
-    @Column(name = "value")
-    private Double value;
+    @Column(name = "value", precision = 10, scale = 2)
+    private BigDecimal value;
 
     @Column(name = "created_at")
     private LocalDateTime created_at;
@@ -63,11 +64,11 @@ public class Scheduling implements Serializable {
         this.destinationAccount = destinationAccount;
     }
 
-    public Double getValue() {
+    public BigDecimal getValue() {
         return value;
     }
 
-    public void setValue(Double value) {
+    public void setValue(BigDecimal value) {
         this.value = value;
     }
 

@@ -1,6 +1,11 @@
 package io.github.gabrielwederson.pay_scheduler_api.dto;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
@@ -12,8 +17,11 @@ public class SchedulingRequestDTO implements Serializable {
 
     private String destinationAccount;
 
-    private Double value;
+    private BigDecimal value;
 
+    @NotNull
+    @NotEmpty
+    @NotBlank
     private LocalDateTime schedulingDate;
 
     public SchedulingRequestDTO() {
@@ -35,11 +43,11 @@ public class SchedulingRequestDTO implements Serializable {
         this.destinationAccount = destinationAccount;
     }
 
-    public Double getValue() {
+    public BigDecimal getValue() {
         return value;
     }
 
-    public void setValue(Double value) {
+    public void setValue(BigDecimal value) {
         this.value = value;
     }
 
