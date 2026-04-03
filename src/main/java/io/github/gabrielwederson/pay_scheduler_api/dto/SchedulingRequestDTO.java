@@ -27,6 +27,13 @@ public class SchedulingRequestDTO implements Serializable {
     public SchedulingRequestDTO() {
     }
 
+    public SchedulingRequestDTO(String originAccount, String destinationAccount, BigDecimal value, LocalDateTime schedulingDate) {
+        this.originAccount = originAccount;
+        this.destinationAccount = destinationAccount;
+        this.value = value;
+        this.schedulingDate = schedulingDate;
+    }
+
     public String getOriginAccount() {
         return originAccount;
     }
