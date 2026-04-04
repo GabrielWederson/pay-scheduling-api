@@ -18,7 +18,7 @@ public class Account implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "number_account")
+    @Column(name = "number_account", unique = true)
     private String numberAccount;
 
     @PositiveOrZero
