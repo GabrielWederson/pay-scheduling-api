@@ -1,8 +1,10 @@
 package io.github.gabrielwederson.pay_scheduler_api.service;
 
 import io.github.gabrielwederson.pay_scheduler_api.dto.SchedulingRequestDTO;
+import io.github.gabrielwederson.pay_scheduler_api.dto.SchedulingResponseDTO;
 import io.github.gabrielwederson.pay_scheduler_api.exception.AccountNotFound;
 import io.github.gabrielwederson.pay_scheduler_api.exception.InvalidDataException;
+import io.github.gabrielwederson.pay_scheduler_api.exception.SchedulingNotFound;
 import io.github.gabrielwederson.pay_scheduler_api.model.Account;
 import io.github.gabrielwederson.pay_scheduler_api.model.Scheduling;
 import io.github.gabrielwederson.pay_scheduler_api.model.Status;
@@ -15,8 +17,10 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import static io.github.gabrielwederson.pay_scheduler_api.mapper.ObjectMapper.parseObjectMapper;
+import static io.github.gabrielwederson.pay_scheduler_api.mapper.ObjectMapper.parseListObjectMapper;
 
 @Service
 public class SchedulingService {
@@ -29,7 +33,7 @@ public class SchedulingService {
     @Autowired
     AccountRepository accountRepository;
 
-    public SchedulingRequestDTO createSchedule(SchedulingRequestDTO requestDTO){
+    public SchedulingResponseDTO create(SchedulingRequestDTO requestDTO){
         logger.info("creating a scheduling");
 
         Account origin = accountRepository
@@ -47,13 +51,27 @@ public class SchedulingService {
             throw new InvalidDataException("The value should be between $1 and $5000.");
 
 
-        var entity = parseObjectMapper(requestDTO, Scheduling.class);
+        Scheduling entity = parseObjectMapper(requestDTO, Scheduling.class);
 
         entity.setCreated_at(LocalDateTime.now());
         entity.setStatus(Status.PENDING);
+        entity.setOriginAccount(requestDTO.getOriginAccount());
+        entity.setDestinationAccount(requestDTO.getDestinationAccount());
 
-        var saved = schedulingRepository.save(entity);
+        Scheduling saved = schedulingRepository.save(entity);
 
-        return parseObjectMapper(saved, SchedulingRequestDTO.class);
-        }
+        return parseObjectMapper(saved, SchedulingResponseDTO.class);
+    }
+
+    public List<SchedulingResponseDTO> findAll(){
+            logger.info("listing appointments");
+            return parseListObjectMapper(schedulingRepository.findAll(), SchedulingResponseDTO.class);
+    }
+
+    public void delete(Long id){
+            logger.info("Deleting Scheduling");
+            Scheduling entity = schedulingRepository.findByStatusAndId(id, Status.PENDING)
+                    .orElseThrow(() -> new SchedulingNotFound("Scheduling not found or not in PENDING status"));
+            schedulingRepository.delete(entity);
+    }
 }
