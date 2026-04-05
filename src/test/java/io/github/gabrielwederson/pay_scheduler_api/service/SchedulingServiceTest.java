@@ -50,12 +50,12 @@ class SchedulingServiceTest {
 
     @Test
     void shouldCreateScheduling() {
-        //when
+        //given
         when(repository.findAccountByNumber("123")).thenReturn(Optional.of(new Account()));
         when(repository.findAccountByNumber("456")).thenReturn(Optional.of(new Account()));
         when(schedulingRepository.save(any(Scheduling.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
-        //then
+        //when
         var result = service.create(scheduling);
         //assertions
         assertNotNull(result);
