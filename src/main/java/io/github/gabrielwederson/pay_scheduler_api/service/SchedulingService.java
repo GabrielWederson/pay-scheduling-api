@@ -28,13 +28,16 @@ public class SchedulingService {
     private Logger logger = LoggerFactory.getLogger(SchedulingService.class.getName());
 
     @Autowired
-    SchedulingRepository schedulingRepository;
+    private SchedulingRepository schedulingRepository;
 
     @Autowired
-    AccountRepository accountRepository;
+    private AccountRepository accountRepository;
 
-    public SchedulingResponseDTO create(SchedulingRequestDTO requestDTO){
-        logger.info("creating a scheduling");
+    @Autowired
+    private SchedulingSchedulerService schedulerService;
+
+    public SchedulingResponseDTO create(SchedulingRequestDTO requestDTO) {
+        logger.info("Creating a scheduling");
 
         Account origin = accountRepository
                 .findAccountByNumber(requestDTO.getOriginAccount())
@@ -44,12 +47,11 @@ public class SchedulingService {
                 .findAccountByNumber(requestDTO.getDestinationAccount())
                 .orElseThrow(() -> new AccountNotFound("Account with this destination number not found"));
 
-        if(requestDTO.getSchedulingDate() == null || !requestDTO.getSchedulingDate().isAfter(LocalDateTime.now()))
+        if (requestDTO.getSchedulingDate() == null || !requestDTO.getSchedulingDate().isAfter(LocalDateTime.now()))
             throw new InvalidDataException("The appointment date cannot be before or the same as today");
 
         if (requestDTO.getValue() == null || requestDTO.getValue().compareTo(BigDecimal.ONE) < 0 || requestDTO.getValue().compareTo(new BigDecimal("5000")) > 0)
             throw new InvalidDataException("The value should be between $1 and $5000.");
-
 
         Scheduling entity = parseObjectMapper(requestDTO, Scheduling.class);
 
@@ -60,18 +62,23 @@ public class SchedulingService {
 
         Scheduling saved = schedulingRepository.save(entity);
 
+
+        schedulerService.scheduleVerification(saved);
+
         return parseObjectMapper(saved, SchedulingResponseDTO.class);
     }
 
-    public List<SchedulingResponseDTO> findAll(){
-            logger.info("listing appointments");
-            return parseListObjectMapper(schedulingRepository.findAll(), SchedulingResponseDTO.class);
+    public List<SchedulingResponseDTO> findAll() {
+        logger.info("Listing appointments");
+        return parseListObjectMapper(schedulingRepository.findAll(), SchedulingResponseDTO.class);
     }
 
-    public void delete(Long id){
-            logger.info("Deleting Scheduling");
-            Scheduling entity = schedulingRepository.findByStatusAndId(id, Status.PENDING)
-                    .orElseThrow(() -> new SchedulingNotFound("Scheduling not found or not in PENDING status"));
-            schedulingRepository.delete(entity);
+    public void delete(Long id) {
+        logger.info("Deleting Scheduling");
+        Scheduling entity = schedulingRepository.findByStatusAndId(id, Status.PENDING)
+                .orElseThrow(() -> new SchedulingNotFound("Scheduling not found or not in PENDING status"));
+
+        schedulerService.cancelScheduledJob(id);
+        schedulingRepository.delete(entity);
     }
 }
