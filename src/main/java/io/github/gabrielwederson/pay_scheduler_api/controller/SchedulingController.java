@@ -37,4 +37,10 @@ public class SchedulingController implements SchedulingControllerDocs {
         schedulingService.delete(id);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/today")
+    @Override
+    public List<SchedulingResponseDTO> findTodayAppointments(){
+        return schedulingService.findByStatusAndDateNow();
+    }
 }
