@@ -47,6 +47,8 @@ public class SchedulingService {
                 .findAccountByNumber(requestDTO.getDestinationAccount())
                 .orElseThrow(() -> new AccountNotFound("Account with this destination number not found"));
 
+        if(requestDTO.getValue().compareTo(origin.getBalance()) > 0) throw new InvalidDataException("Insufficient balance for this scheduling");
+
         if (requestDTO.getSchedulingDate() == null || !requestDTO.getSchedulingDate().isAfter(LocalDateTime.now()))
             throw new InvalidDataException("The appointment date cannot be before or the same as today");
 

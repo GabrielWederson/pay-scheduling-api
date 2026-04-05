@@ -91,12 +91,19 @@ public class SchedulingSchedulerService {
 
         try {
             Account origin = accountRepository
-                    .findAccountByNumberWithLock(scheduling.getOriginAccount())
+                    .findAccountByNumber(scheduling.getOriginAccount())
                     .orElseThrow(() -> new AccountNotFound("This account doesn't exist"));
+
+            Account destination = accountRepository
+                    .findAccountByNumber(scheduling.getDestinationAccount())
+                    .orElseThrow(() -> new AccountNotFound("Destination account doesn't exist"));
 
             if (origin.getBalance().compareTo(scheduling.getValue()) >= 0) {
                 origin.setBalance(origin.getBalance().subtract(scheduling.getValue()));
                 accountRepository.save(origin);
+
+                destination.setBalance(destination.getBalance().add(scheduling.getValue()));
+                accountRepository.save(destination);
 
                 scheduling.setStatus(Status.EXECUTED);
                 schedulingRepository.save(scheduling);
