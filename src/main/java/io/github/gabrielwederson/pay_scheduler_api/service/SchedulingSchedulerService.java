@@ -55,6 +55,7 @@ public class SchedulingSchedulerService {
         logger.info("Scheduled verification");
     }
 
+    @Transactional
     private void executeVerification(Scheduling scheduling) {
         logger.info("Executing verification");
 

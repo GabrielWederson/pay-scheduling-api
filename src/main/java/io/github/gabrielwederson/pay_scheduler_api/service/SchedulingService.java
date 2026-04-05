@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -36,6 +37,7 @@ public class SchedulingService {
     @Autowired
     private SchedulingSchedulerService schedulerService;
 
+    @Transactional
     public SchedulingResponseDTO create(SchedulingRequestDTO requestDTO) {
         logger.info("Creating a scheduling");
 
@@ -75,6 +77,7 @@ public class SchedulingService {
         return parseListObjectMapper(schedulingRepository.findAll(), SchedulingResponseDTO.class);
     }
 
+    @Transactional
     public void delete(Long id) {
         logger.info("Deleting Scheduling");
         Scheduling entity = schedulingRepository.findByStatusAndId(id, Status.PENDING)
