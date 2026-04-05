@@ -6,6 +6,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 public interface SchedulingRepository extends JpaRepository<Scheduling, Long> {
@@ -14,4 +16,9 @@ public interface SchedulingRepository extends JpaRepository<Scheduling, Long> {
     Optional<Scheduling> findByStatusAndId( @Param("id") Long id,
             @Param("status") Status status
     );
+
+    @Query("SELECT s FROM Scheduling s WHERE s.status = :status AND DATE(s.schedulingDate) = :date  ")
+    List<Scheduling> findByStatusAndDate(@Param("status") Status status,
+                                         @Param("date") LocalDate date
+                                             );
 }
