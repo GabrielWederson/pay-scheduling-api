@@ -123,8 +123,8 @@ class SchedulingControllerTest {
         responseDTO2.setValue(new BigDecimal("200.00"));
         responseDTO2.setStatus(Status.PENDING);
 
-        List<SchedulingResponseDTO> schedulings = Arrays.asList(responseDTO, responseDTO2);
-        when(schedulingService.findAll()).thenReturn(schedulings);
+        List<SchedulingResponseDTO> scheduling = Arrays.asList(responseDTO, responseDTO2);
+        when(schedulingService.findAll()).thenReturn(scheduling);
 
         // when
         List<SchedulingResponseDTO> result = schedulingController.findAllAppointments();
