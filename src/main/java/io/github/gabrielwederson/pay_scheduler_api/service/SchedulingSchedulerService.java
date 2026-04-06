@@ -1,6 +1,7 @@
 package io.github.gabrielwederson.pay_scheduler_api.service;
 
 import io.github.gabrielwederson.pay_scheduler_api.exception.AccountNotFound;
+import io.github.gabrielwederson.pay_scheduler_api.exception.UserNotFound;
 import io.github.gabrielwederson.pay_scheduler_api.model.Account;
 import io.github.gabrielwederson.pay_scheduler_api.model.Scheduling;
 import io.github.gabrielwederson.pay_scheduler_api.model.Status;
@@ -8,6 +9,7 @@ import io.github.gabrielwederson.pay_scheduler_api.repository.AccountRepository;
 import io.github.gabrielwederson.pay_scheduler_api.repository.SchedulingRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,14 +29,18 @@ public class SchedulingSchedulerService {
     private final TaskScheduler taskScheduler;
     private final SchedulingRepository schedulingRepository;
     private final AccountRepository accountRepository;
+    private final EmailService emailService;
     private final Map<Long, ScheduledFuture<?>> scheduledJobs = new ConcurrentHashMap<>();
+    private static final String subject = "NEWS ABOUT SCHEDULED PAYMENT";
+    private static final String body = "Your scheduled payment";
 
     public SchedulingSchedulerService(TaskScheduler taskScheduler,
                                       SchedulingRepository schedulingRepository,
-                                      AccountRepository accountRepository) {
+                                      AccountRepository accountRepository, EmailService emailService) {
         this.taskScheduler = taskScheduler;
         this.schedulingRepository = schedulingRepository;
         this.accountRepository = accountRepository;
+        this.emailService = emailService;
     }
 
     public void scheduleVerification(Scheduling scheduling) {
@@ -70,6 +76,17 @@ public class SchedulingSchedulerService {
                 scheduling.setStatus(Status.FAILED);
                 schedulingRepository.save(scheduling);
                 logger.warn("Insufficient balance");
+                String date = scheduling.getSchedulingDate().toString();
+                String originEmail = accountRepository
+                        .findUserEmailByAccountNumber(scheduling.getOriginAccount())
+                        .orElseThrow(() -> new UserNotFound("User of origin payment email not found"));
+
+                String destinationEmail = accountRepository
+                        .findUserEmailByAccountNumber(scheduling.getDestinationAccount())
+                        .orElseThrow(() -> new UserNotFound("User of destination payment email not found"));
+                emailService.sendEmail(originEmail, subject, body + " was failed!!, on the date: " + date);
+                emailService.sendEmail(destinationEmail, subject, body + " was failed!!, on the date: " + date);
+
             }
         } catch (Exception e) {
             logger.error("Error during verification");
@@ -108,17 +125,45 @@ public class SchedulingSchedulerService {
 
                 scheduling.setStatus(Status.EXECUTED);
                 schedulingRepository.save(scheduling);
-
                 logger.info("payment executed successfully");
+                String date = scheduling.getSchedulingDate().toString();
+                String originEmail = accountRepository
+                        .findUserEmailByAccountNumber(scheduling.getOriginAccount())
+                        .orElseThrow(() -> new UserNotFound("User of origin payment email not found"));
+
+                String destinationEmail = accountRepository
+                        .findUserEmailByAccountNumber(scheduling.getDestinationAccount())
+                        .orElseThrow(() -> new UserNotFound("User of destination payment email not found"));
+                emailService.sendEmail(originEmail, subject, body + " was executed!!, on the date: " + date);
+                emailService.sendEmail(destinationEmail, subject, body + " was executed!!, on the date: " + date);
             } else {
                 scheduling.setStatus(Status.FAILED);
                 schedulingRepository.save(scheduling);
                 logger.warn("payment failed");
+                String date = scheduling.getSchedulingDate().toString();
+                String originEmail = accountRepository
+                        .findUserEmailByAccountNumber(scheduling.getOriginAccount())
+                        .orElseThrow(() -> new UserNotFound("User of origin payment email not found"));
+                String destinationEmail = accountRepository
+                        .findUserEmailByAccountNumber(scheduling.getDestinationAccount())
+                        .orElseThrow(() -> new UserNotFound("User of destination payment email not found"));
+                emailService.sendEmail(originEmail, subject, body + " was failed!!, on the date: " + date);
+                emailService.sendEmail(destinationEmail, subject, body + " was failed!!, on the date: " + date);
+
             }
         } catch (Exception e) {
             logger.error("Error executing payment");
             scheduling.setStatus(Status.FAILED);
             schedulingRepository.save(scheduling);
+            String date = scheduling.getSchedulingDate().toString();
+            String originEmail = accountRepository
+                    .findUserEmailByAccountNumber(scheduling.getOriginAccount())
+                    .orElseThrow(() -> new UserNotFound("User of origin payment email not found"));
+            String destinationEmail = accountRepository
+                    .findUserEmailByAccountNumber(scheduling.getDestinationAccount())
+                    .orElseThrow(() -> new UserNotFound("User of destination payment email not found"));
+            emailService.sendEmail(originEmail, subject, body + " was failed!!, on the date: " + date);
+            emailService.sendEmail(destinationEmail, subject, body + " was failed!!, on the date: " + date);
         } finally {
             scheduledJobs.remove(scheduling.getId());
         }

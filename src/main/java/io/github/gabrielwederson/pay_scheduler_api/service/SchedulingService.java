@@ -5,6 +5,7 @@ import io.github.gabrielwederson.pay_scheduler_api.dto.SchedulingResponseDTO;
 import io.github.gabrielwederson.pay_scheduler_api.exception.AccountNotFound;
 import io.github.gabrielwederson.pay_scheduler_api.exception.InvalidDataException;
 import io.github.gabrielwederson.pay_scheduler_api.exception.SchedulingNotFound;
+import io.github.gabrielwederson.pay_scheduler_api.exception.UserNotFound;
 import io.github.gabrielwederson.pay_scheduler_api.model.Account;
 import io.github.gabrielwederson.pay_scheduler_api.model.Scheduling;
 import io.github.gabrielwederson.pay_scheduler_api.model.Status;
@@ -38,6 +39,13 @@ public class SchedulingService {
     @Autowired
     private SchedulingSchedulerService schedulerService;
 
+    @Autowired
+    private EmailService emailService;
+
+    private static final String subject = "NEW SCHEDULED PAYMENT";
+
+    private static final String body = "you have a new payment scheduled";
+
     @Transactional
     public SchedulingResponseDTO create(SchedulingRequestDTO requestDTO) {
         logger.info("Creating a scheduling");
@@ -64,11 +72,23 @@ public class SchedulingService {
         entity.setStatus(Status.PENDING);
         entity.setOriginAccount(requestDTO.getOriginAccount());
         entity.setDestinationAccount(requestDTO.getDestinationAccount());
+        String date = requestDTO.getSchedulingDate().toString();
+        String amount = requestDTO.getValue().toString();
 
         Scheduling saved = schedulingRepository.save(entity);
 
-
         schedulerService.scheduleVerification(saved);
+
+        String originEmail = accountRepository
+                .findUserEmailByAccountNumber(requestDTO.getOriginAccount())
+                .orElseThrow(() -> new UserNotFound("User of origin payment email not found"));
+
+        String destinationEmail = accountRepository
+                .findUserEmailByAccountNumber(requestDTO.getDestinationAccount())
+                .orElseThrow(() -> new UserNotFound("User of destination payment email not found"));
+
+        emailService.sendEmail(originEmail, subject, body + "on the date: " + date + "with the amount of: " + amount);
+        emailService.sendEmail(destinationEmail, subject, body + "on the date: " + date + "with the amount of: " + amount);
 
         return parseObjectMapper(saved, SchedulingResponseDTO.class);
     }

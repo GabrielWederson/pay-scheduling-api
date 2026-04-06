@@ -1,9 +1,6 @@
 package io.github.gabrielwederson.pay_scheduler_api.exception.handler;
 
-import io.github.gabrielwederson.pay_scheduler_api.exception.AccountNotFound;
-import io.github.gabrielwederson.pay_scheduler_api.exception.ExceptionResponse;
-import io.github.gabrielwederson.pay_scheduler_api.exception.InvalidDataException;
-import io.github.gabrielwederson.pay_scheduler_api.exception.SchedulingNotFound;
+import io.github.gabrielwederson.pay_scheduler_api.exception.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -45,6 +42,15 @@ public class ModifiedExceptionHandler extends ResponseEntityExceptionHandler {
     }
     @ExceptionHandler(SchedulingNotFound.class)
     public final ResponseEntity<ExceptionResponse> handlerSchedulingNotFoundException(Exception ex, WebRequest request){
+        ExceptionResponse response = new ExceptionResponse(
+                new Date(),
+                ex.getMessage(),
+                request.getDescription(false)
+        );
+        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+    }
+    @ExceptionHandler(UserNotFound.class)
+    public final ResponseEntity<ExceptionResponse> handlerUserNotFoundException(Exception ex, WebRequest request){
         ExceptionResponse response = new ExceptionResponse(
                 new Date(),
                 ex.getMessage(),
