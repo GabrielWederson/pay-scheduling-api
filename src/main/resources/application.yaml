@@ -30,6 +30,13 @@ spring:
           timeout: 5000
           writetimeout: 5000
         debug: false
+  task:
+    execution:
+      pool:
+        core-size: 5
+        max-size: 10
+        queue-capacity: 100
+      thread-name-prefix: async-email-
 
 springdoc:
   api-docs:

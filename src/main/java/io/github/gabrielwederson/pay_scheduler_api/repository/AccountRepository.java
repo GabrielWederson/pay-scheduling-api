@@ -18,6 +18,6 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
     @Query("SELECT a FROM Account a WHERE a.numberAccount = :numberAccount")
     Optional<Account> findAccountByNumberWithLock(@Param("numberAccount") String numberAccount);
 
-    @Query("SELECT u.email FROM Account a JOIN a.users u WHERE a.numberAccount = :numberAccount")
+    @Query("SELECT u.email FROM Account a JOIN a.user u WHERE a.numberAccount = :numberAccount")
     Optional<String> findUserEmailByAccountNumber(@Param("numberAccount") String numberAccount);
 }

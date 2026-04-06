@@ -72,12 +72,14 @@ public class SchedulingService {
         entity.setStatus(Status.PENDING);
         entity.setOriginAccount(requestDTO.getOriginAccount());
         entity.setDestinationAccount(requestDTO.getDestinationAccount());
-        String date = requestDTO.getSchedulingDate().toString();
-        String amount = requestDTO.getValue().toString();
 
         Scheduling saved = schedulingRepository.save(entity);
 
         schedulerService.scheduleVerification(saved);
+
+        String date = requestDTO.getSchedulingDate().toString();
+        String amount = requestDTO.getValue().toString();
+        String emailBody = body + " on the date: " + date + " with the amount of: " + amount;
 
         String originEmail = accountRepository
                 .findUserEmailByAccountNumber(requestDTO.getOriginAccount())
@@ -87,8 +89,8 @@ public class SchedulingService {
                 .findUserEmailByAccountNumber(requestDTO.getDestinationAccount())
                 .orElseThrow(() -> new UserNotFound("User of destination payment email not found"));
 
-        emailService.sendEmail(originEmail, subject, body + "on the date: " + date + "with the amount of: " + amount);
-        emailService.sendEmail(destinationEmail, subject, body + "on the date: " + date + "with the amount of: " + amount);
+        emailService.sendEmail(originEmail, subject, emailBody);
+        emailService.sendEmail(destinationEmail, subject, emailBody);
 
         return parseObjectMapper(saved, SchedulingResponseDTO.class);
     }
