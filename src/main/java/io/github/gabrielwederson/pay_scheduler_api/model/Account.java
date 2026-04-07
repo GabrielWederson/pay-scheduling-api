@@ -25,6 +25,10 @@ public class Account implements Serializable {
     @Column(name = "balance", precision = 10, scale = 2)
     private BigDecimal balance;
 
+    @PositiveOrZero
+    @Column(name = "reserved_balance", precision = 10, scale = 2)
+    private BigDecimal reservedBalance = BigDecimal.ZERO;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     @JsonIgnore
@@ -57,6 +61,18 @@ public class Account implements Serializable {
         this.balance = balance;
     }
 
+    public BigDecimal getReservedBalance() {
+        return reservedBalance;
+    }
+
+    public void setReservedBalance(BigDecimal reservedBalance) {
+        this.reservedBalance = reservedBalance;
+    }
+
+    public BigDecimal getAvailableBalance() {
+        return balance.subtract(reservedBalance);
+    }
+
     public User getUser() {
         return user;
     }
@@ -69,11 +85,11 @@ public class Account implements Serializable {
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         Account account = (Account) o;
-        return Objects.equals(id, account.id) && Objects.equals(numberAccount, account.numberAccount) && Objects.equals(balance, account.balance) && Objects.equals(user, account.user);
+        return Objects.equals(id, account.id) && Objects.equals(numberAccount, account.numberAccount) && Objects.equals(balance, account.balance) && Objects.equals(reservedBalance, account.reservedBalance) && Objects.equals(user, account.user);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, numberAccount, balance, user);
+        return Objects.hash(id, numberAccount, balance, reservedBalance, user);
     }
 }

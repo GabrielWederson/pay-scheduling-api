@@ -38,6 +38,12 @@ spring:
         queue-capacity: 100
       thread-name-prefix: async-email-
 
+security:
+  jwt:
+    token:
+      secret-key: ${JWT_SECRET}
+      expire-length: ${JWT_EXPIRE_LENGTH:3600000}
+
 springdoc:
   api-docs:
     enabled: true

@@ -48,17 +48,21 @@ public class SchedulingService {
 
     @Transactional
     public SchedulingResponseDTO create(SchedulingRequestDTO requestDTO) {
-        logger.info("Creating a scheduling");
+        logger.info("Creating a scheduling with fund reservation");
+
 
         Account origin = accountRepository
-                .findAccountByNumber(requestDTO.getOriginAccount())
+                .findAccountByNumberWithLock(requestDTO.getOriginAccount())
                 .orElseThrow(() -> new AccountNotFound("Account with this origin number not found"));
 
         Account destination = accountRepository
                 .findAccountByNumber(requestDTO.getDestinationAccount())
                 .orElseThrow(() -> new AccountNotFound("Account with this destination number not found"));
 
-        if(requestDTO.getValue().compareTo(origin.getBalance()) > 0) throw new InvalidDataException("Insufficient balance for this scheduling");
+        BigDecimal availableBalance = origin.getAvailableBalance();
+        if (requestDTO.getValue().compareTo(availableBalance) > 0) {
+            throw new InvalidDataException("Insufficient balance for this scheduling. Available: " + availableBalance);
+        }
 
         if (requestDTO.getSchedulingDate() == null || !requestDTO.getSchedulingDate().isAfter(LocalDateTime.now()))
             throw new InvalidDataException("The appointment date cannot be before or the same as today");
@@ -66,20 +70,25 @@ public class SchedulingService {
         if (requestDTO.getValue() == null || requestDTO.getValue().compareTo(BigDecimal.ONE) < 0 || requestDTO.getValue().compareTo(new BigDecimal("5000")) > 0)
             throw new InvalidDataException("The value should be between $1 and $5000.");
 
-        Scheduling entity = parseObjectMapper(requestDTO, Scheduling.class);
 
-        entity.setCreated_at(LocalDateTime.now());
+        origin.setReservedBalance(origin.getReservedBalance().add(requestDTO.getValue()));
+        accountRepository.save(origin);
+
+
+        Scheduling entity = new Scheduling();
+        entity.setOriginAccount(origin);
+        entity.setDestinationAccount(destination);
+        entity.setValue(requestDTO.getValue());
+        entity.setSchedulingDate(requestDTO.getSchedulingDate());
+        entity.setCreatedAt(LocalDateTime.now());
         entity.setStatus(Status.PENDING);
-        entity.setOriginAccount(requestDTO.getOriginAccount());
-        entity.setDestinationAccount(requestDTO.getDestinationAccount());
 
         Scheduling saved = schedulingRepository.save(entity);
-
         schedulerService.scheduleVerification(saved);
 
         String date = requestDTO.getSchedulingDate().toString();
         String amount = requestDTO.getValue().toString();
-        String emailBody = body + " on the date: " + date + " with the amount of: " + amount;
+        String emailBody = body + " reserved on the date: " + date + " with the amount of: " + amount;
 
         String originEmail = accountRepository
                 .findUserEmailByAccountNumber(requestDTO.getOriginAccount())
@@ -92,12 +101,14 @@ public class SchedulingService {
         emailService.sendEmail(originEmail, subject, emailBody);
         emailService.sendEmail(destinationEmail, subject, emailBody);
 
-        return parseObjectMapper(saved, SchedulingResponseDTO.class);
+        return new SchedulingResponseDTO(saved);
     }
 
     public List<SchedulingResponseDTO> findAll() {
         logger.info("Listing appointments");
-        return parseListObjectMapper(schedulingRepository.findAll(), SchedulingResponseDTO.class);
+        return schedulingRepository.findAll().stream()
+                .map(SchedulingResponseDTO::new)
+                .toList();
     }
 
     @Transactional
@@ -112,10 +123,10 @@ public class SchedulingService {
 
     public List<SchedulingResponseDTO> findByStatusAndDateNow(){
         LocalDate today = LocalDate.now();
-
         List<Scheduling> entities = schedulingRepository.findByStatusAndDate(Status.PENDING, today);
-
-        return parseListObjectMapper(entities, SchedulingResponseDTO.class);
+        return entities.stream()
+                .map(SchedulingResponseDTO::new)
+                .toList();
 
     }
 }

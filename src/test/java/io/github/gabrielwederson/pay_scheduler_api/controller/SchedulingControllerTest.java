@@ -54,7 +54,7 @@ class SchedulingControllerTest {
         responseDTO.setValue(new BigDecimal("100.00"));
         responseDTO.setStatus(Status.PENDING);
         responseDTO.setSchedulingDate(futureDate);
-        responseDTO.setCreated_at(LocalDateTime.now());
+        responseDTO.setCreatedAt(LocalDateTime.now());
     }
 
     @Test

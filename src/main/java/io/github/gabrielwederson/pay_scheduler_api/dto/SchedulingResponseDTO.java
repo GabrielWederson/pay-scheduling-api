@@ -1,5 +1,6 @@
 package io.github.gabrielwederson.pay_scheduler_api.dto;
 
+import io.github.gabrielwederson.pay_scheduler_api.model.Scheduling;
 import io.github.gabrielwederson.pay_scheduler_api.model.Status;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -16,18 +17,23 @@ public class SchedulingResponseDTO implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private String originAccount;
-
     private String destinationAccount;
-
     private BigDecimal value;
-
-    private LocalDateTime created_at;
-
+    private LocalDateTime createdAt;
     private LocalDateTime schedulingDate;
-
     private Status status;
 
     public SchedulingResponseDTO() {
+    }
+
+
+    public SchedulingResponseDTO(Scheduling scheduling) {
+        this.originAccount = scheduling.getOriginAccount().getNumberAccount();
+        this.destinationAccount = scheduling.getDestinationAccount().getNumberAccount();
+        this.value = scheduling.getValue();
+        this.createdAt = scheduling.getCreatedAt();
+        this.schedulingDate = scheduling.getSchedulingDate();
+        this.status = scheduling.getStatus();
     }
 
     public String getOriginAccount() {
@@ -54,12 +60,12 @@ public class SchedulingResponseDTO implements Serializable {
         this.value = value;
     }
 
-    public LocalDateTime getCreated_at() {
-        return created_at;
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
     }
 
-    public void setCreated_at(LocalDateTime created_at) {
-        this.created_at = created_at;
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
     }
 
     public LocalDateTime getSchedulingDate() {
@@ -82,11 +88,16 @@ public class SchedulingResponseDTO implements Serializable {
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         SchedulingResponseDTO that = (SchedulingResponseDTO) o;
-        return Objects.equals(originAccount, that.originAccount) && Objects.equals(destinationAccount, that.destinationAccount) && Objects.equals(value, that.value) && Objects.equals(created_at, that.created_at) && Objects.equals(schedulingDate, that.schedulingDate) && status == that.status;
+        return Objects.equals(originAccount, that.originAccount) &&
+                Objects.equals(destinationAccount, that.destinationAccount) &&
+                Objects.equals(value, that.value) &&
+                Objects.equals(createdAt, that.createdAt) &&
+                Objects.equals(schedulingDate, that.schedulingDate) &&
+                status == that.status;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(originAccount, destinationAccount, value, created_at, schedulingDate, status);
+        return Objects.hash(originAccount, destinationAccount, value, createdAt, schedulingDate, status);
     }
 }

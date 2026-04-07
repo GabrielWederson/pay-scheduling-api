@@ -14,6 +14,9 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
     @Query("SELECT a FROM Account a WHERE a.numberAccount =:numberAccount")
     Optional<Account> findAccountByNumber(@Param("numberAccount")String numberAccount);
 
+    @Query("SELECT a FROM Account a JOIN FETCH a.user WHERE a.numberAccount = :numberAccount")
+    Optional<Account> findAccountByNumberWithUser(@Param("numberAccount") String numberAccount);
+
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT a FROM Account a WHERE a.numberAccount = :numberAccount")
     Optional<Account> findAccountByNumberWithLock(@Param("numberAccount") String numberAccount);
