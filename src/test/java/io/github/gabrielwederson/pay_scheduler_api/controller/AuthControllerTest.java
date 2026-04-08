@@ -169,16 +169,16 @@ class AuthControllerTest {
 
     @Test
     void refreshToken_ShouldReturnOkStatusWithToken() {
-        // Arrange
+        
         String email = "john@example.com";
         String refreshToken = "Bearer refresh-token-123";
 
         when(authService.refreshToken(email, refreshToken)).thenReturn(tokenDTO);
 
-        // Act
+        
         ResponseEntity<TokenDTO> response = authController.refreshToken(email, refreshToken);
 
-        // Assert
+        
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
         assertEquals(tokenDTO, response.getBody());
@@ -192,16 +192,16 @@ class AuthControllerTest {
 
     @Test
     void refreshToken_ShouldCallAuthServiceWithCorrectParameters() {
-        // Arrange
+        
         String email = "john@example.com";
         String refreshToken = "Bearer refresh-token-123";
 
         when(authService.refreshToken(email, refreshToken)).thenReturn(tokenDTO);
 
-        // Act
+        
         authController.refreshToken(email, refreshToken);
 
-        // Assert
+        
         verify(authService, times(1)).refreshToken(email, refreshToken);
         verify(authService, never()).register(any(RegisterRequest.class));
         verify(authService, never()).signin(any(SignInRequestDTO.class));
@@ -209,14 +209,14 @@ class AuthControllerTest {
 
     @Test
     void refreshToken_WhenAuthServiceThrowsException_ShouldPropagateException() {
-        // Arrange
+        
         String email = "john@example.com";
         String refreshToken = "Bearer invalid-token";
 
         RuntimeException expectedException = new RuntimeException("Invalid refresh token");
         when(authService.refreshToken(email, refreshToken)).thenThrow(expectedException);
 
-        // Act & Assert
+
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
             authController.refreshToken(email, refreshToken);
         });
@@ -227,7 +227,7 @@ class AuthControllerTest {
 
     @Test
     void refreshToken_ShouldReturnTokenWithAllFields() {
-        // Arrange
+        
         String email = "test@example.com";
         String refreshToken = "Bearer refresh-token-456";
 
@@ -242,11 +242,11 @@ class AuthControllerTest {
 
         when(authService.refreshToken(email, refreshToken)).thenReturn(customToken);
 
-        // Act
+        
         ResponseEntity<TokenDTO> response = authController.refreshToken(email, refreshToken);
         TokenDTO returnedToken = response.getBody();
 
-        // Assert
+        
         assertNotNull(returnedToken);
         assertEquals(email, returnedToken.getUsername());
         assertTrue(returnedToken.getAuthenticated());
@@ -258,7 +258,7 @@ class AuthControllerTest {
 
     @Test
     void refreshToken_WithDifferentEmail_ShouldWorkCorrectly() {
-        // Arrange
+
         String email = "another@example.com";
         String refreshToken = "Bearer another-refresh-token";
 
@@ -273,10 +273,10 @@ class AuthControllerTest {
 
         when(authService.refreshToken(email, refreshToken)).thenReturn(anotherToken);
 
-        // Act
+
         ResponseEntity<TokenDTO> response = authController.refreshToken(email, refreshToken);
 
-        // Assert
+
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
         assertEquals(email, response.getBody().getUsername());
