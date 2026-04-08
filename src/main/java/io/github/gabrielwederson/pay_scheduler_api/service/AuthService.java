@@ -3,8 +3,10 @@ package io.github.gabrielwederson.pay_scheduler_api.service;
 
 import io.github.gabrielwederson.pay_scheduler_api.dto.RegisterRequest;
 import io.github.gabrielwederson.pay_scheduler_api.dto.SignInRequestDTO;
-import io.github.gabrielwederson.pay_scheduler_api.dto.security.RegisterResponseDTO;
 import io.github.gabrielwederson.pay_scheduler_api.dto.security.TokenDTO;
+import io.github.gabrielwederson.pay_scheduler_api.exception.InvalidDataException;
+import io.github.gabrielwederson.pay_scheduler_api.exception.InvalidRefreshTokenException;
+import io.github.gabrielwederson.pay_scheduler_api.exception.UserNotFound;
 import io.github.gabrielwederson.pay_scheduler_api.model.Account;
 import io.github.gabrielwederson.pay_scheduler_api.model.User;
 import io.github.gabrielwederson.pay_scheduler_api.repository.AccountRepository;
@@ -13,19 +15,14 @@ import io.github.gabrielwederson.pay_scheduler_api.security.jwt.JwtTokenProvider
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.password.DelegatingPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.crypto.password.Pbkdf2PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Service
 public class AuthService {
@@ -101,5 +98,55 @@ public class AuthService {
 
     private String generateAccountNumber() {
         return "000" + System.currentTimeMillis();
+    }
+
+    public TokenDTO refreshToken(String email, String refreshToken) {
+        validateParameters(email, refreshToken);
+
+        var user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFound("Email not found!"));
+
+        validateUserStatus(user);
+
+        try {
+            TokenDTO token = tokenProvider.refreshToken(refreshToken);
+
+            if (token == null) {
+                throw new InvalidRefreshTokenException("Failed to refresh token");
+            }
+
+            return token;
+
+        } catch (Exception e) {
+            throw new InvalidRefreshTokenException("Invalid or expired refresh token");
+        }
+    }
+
+    private void validateParameters(String email, String refreshToken) {
+        if (email == null || email.isBlank()) {
+            throw new InvalidDataException("Email cannot be null or empty");
+        }
+
+        if (refreshToken == null || refreshToken.isBlank()) {
+            throw new InvalidDataException("Refresh token cannot be null or empty");
+        }
+    }
+
+    private void validateUserStatus(io.github.gabrielwederson.pay_scheduler_api.model.User user) {
+        if (!user.isEnabled()) {
+            throw new RuntimeException("User account is disabled");
+        }
+
+        if (!user.isAccountNonLocked()) {
+            throw new RuntimeException("User account is locked");
+        }
+
+        if (!user.isAccountNonExpired()) {
+            throw new RuntimeException("User account is expired");
+        }
+
+        if (!user.isCredentialsNonExpired()) {
+            throw new RuntimeException("User credentials are expired");
+        }
     }
 }
