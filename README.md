@@ -90,6 +90,7 @@ A robust REST API for scheduling and executing future bank transfers with fund r
 |--------|----------|-------------|--------|
 | POST | `/auth/register` | Create new user + bank account | Public |
 | POST | `/auth/signin` | Authenticate and get JWT | Public |
+| POST | `/auth/refresh/{email}` | Refresh token JWT | Public |
 
 ### PIX Scheduling
 | Method | Endpoint | Description | Access |
