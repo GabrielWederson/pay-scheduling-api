@@ -4,7 +4,7 @@ import io.github.gabrielwederson.pay_scheduler_api.dto.SchedulingRequestDTO;
 import io.github.gabrielwederson.pay_scheduler_api.dto.SchedulingResponseDTO;
 import io.github.gabrielwederson.pay_scheduler_api.exception.AccountNotFound;
 import io.github.gabrielwederson.pay_scheduler_api.exception.InvalidDataException;
-import io.github.gabrielwederson.pay_scheduler_api.exception.SchedulingNotFound;
+import io.github.gabrielwederson.pay_scheduler_api.exception.SchedulingNotFoundException;
 import io.github.gabrielwederson.pay_scheduler_api.model.Status;
 import io.github.gabrielwederson.pay_scheduler_api.service.SchedulingService;
 import org.junit.jupiter.api.BeforeEach;
@@ -170,11 +170,11 @@ class SchedulingControllerTest {
     void ShouldThrowException_WhenSchedulingNotFound() {
         // given
         Long id = 999L;
-        doThrow(new SchedulingNotFound("Scheduling not found or not in PENDING status"))
+        doThrow(new SchedulingNotFoundException("Scheduling not found or not in PENDING status"))
                 .when(schedulingService).delete(id);
 
         // when and then
-        assertThrows(SchedulingNotFound.class, () -> {
+        assertThrows(SchedulingNotFoundException.class, () -> {
             schedulingController.deleteScheduling(id);
         });
         verify(schedulingService, times(1)).delete(id);

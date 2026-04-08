@@ -40,7 +40,7 @@ public class ModifiedExceptionHandler extends ResponseEntityExceptionHandler {
         );
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
-    @ExceptionHandler(SchedulingNotFound.class)
+    @ExceptionHandler(SchedulingNotFoundException.class)
     public final ResponseEntity<ExceptionResponse> handlerSchedulingNotFoundException(Exception ex, WebRequest request){
         ExceptionResponse response = new ExceptionResponse(
                 new Date(),
@@ -49,7 +49,7 @@ public class ModifiedExceptionHandler extends ResponseEntityExceptionHandler {
         );
         return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
     }
-    @ExceptionHandler(UserNotFound.class)
+    @ExceptionHandler(UserNotFoundException.class)
     public final ResponseEntity<ExceptionResponse> handlerUserNotFoundException(Exception ex, WebRequest request){
         ExceptionResponse response = new ExceptionResponse(
                 new Date(),

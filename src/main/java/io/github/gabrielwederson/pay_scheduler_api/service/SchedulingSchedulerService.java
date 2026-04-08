@@ -1,7 +1,7 @@
 package io.github.gabrielwederson.pay_scheduler_api.service;
 
 import io.github.gabrielwederson.pay_scheduler_api.exception.AccountNotFound;
-import io.github.gabrielwederson.pay_scheduler_api.exception.UserNotFound;
+import io.github.gabrielwederson.pay_scheduler_api.exception.UserNotFoundException;
 import io.github.gabrielwederson.pay_scheduler_api.model.Account;
 import io.github.gabrielwederson.pay_scheduler_api.model.Scheduling;
 import io.github.gabrielwederson.pay_scheduler_api.model.Status;
@@ -200,10 +200,10 @@ public class SchedulingSchedulerService {
             String date = scheduling.getSchedulingDate().toString();
             String originEmail = accountRepository
                     .findUserEmailByAccountNumber(scheduling.getOriginAccount().getNumberAccount())
-                    .orElseThrow(() -> new UserNotFound("User of origin payment email not found"));
+                    .orElseThrow(() -> new UserNotFoundException("User of origin payment email not found"));
             String destinationEmail = accountRepository
                     .findUserEmailByAccountNumber(scheduling.getDestinationAccount().getNumberAccount())
-                    .orElseThrow(() -> new UserNotFound("User of destination payment email not found"));
+                    .orElseThrow(() -> new UserNotFoundException("User of destination payment email not found"));
 
             emailService.sendEmail(originEmail, subject, body + " was failed on: " + date);
             emailService.sendEmail(destinationEmail, subject, body + " was failed on: " + date);
@@ -217,10 +217,10 @@ public class SchedulingSchedulerService {
             String date = scheduling.getSchedulingDate().toString();
             String originEmail = accountRepository
                     .findUserEmailByAccountNumber(scheduling.getOriginAccount().getNumberAccount())
-                    .orElseThrow(() -> new UserNotFound("User of origin payment email not found"));
+                    .orElseThrow(() -> new UserNotFoundException("User of origin payment email not found"));
             String destinationEmail = accountRepository
                     .findUserEmailByAccountNumber(scheduling.getDestinationAccount().getNumberAccount())
-                    .orElseThrow(() -> new UserNotFound("User of destination payment email not found"));
+                    .orElseThrow(() -> new UserNotFoundException("User of destination payment email not found"));
 
             emailService.sendEmail(originEmail, subject, body + " was executed on: " + date);
             emailService.sendEmail(destinationEmail, subject, body + " was executed on: " + date);

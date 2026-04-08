@@ -3,6 +3,8 @@ package io.github.gabrielwederson.pay_scheduler_api.service;
 import io.github.gabrielwederson.pay_scheduler_api.dto.RegisterRequest;
 import io.github.gabrielwederson.pay_scheduler_api.dto.SignInRequestDTO;
 import io.github.gabrielwederson.pay_scheduler_api.dto.security.TokenDTO;
+import io.github.gabrielwederson.pay_scheduler_api.exception.InvalidDataException;
+import io.github.gabrielwederson.pay_scheduler_api.exception.UserNotFoundException;
 import io.github.gabrielwederson.pay_scheduler_api.model.Account;
 import io.github.gabrielwederson.pay_scheduler_api.model.User;
 import io.github.gabrielwederson.pay_scheduler_api.repository.AccountRepository;
@@ -211,5 +213,225 @@ class AuthServiceTest {
         String accountNumber = accountCaptor.getValue().getNumberAccount();
         assertNotNull(accountNumber);
         assertTrue(accountNumber.startsWith("000"));
+    }
+
+    @Test
+    void refreshToken_WithValidData_ShouldReturnNewToken() {
+        
+        String email = "john@example.com";
+        String refreshToken = "Bearer refresh-token-123";
+
+        when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
+        when(tokenProvider.refreshToken(refreshToken)).thenReturn(expectedToken);
+
+       
+        TokenDTO result = authService.refreshToken(email, refreshToken);
+
+        
+        assertNotNull(result);
+        assertEquals(expectedToken, result);
+        assertEquals(email, result.getUsername());
+        assertTrue(result.getAuthenticated());
+        assertNotNull(result.getAccessToken());
+        assertNotNull(result.getRefreshToken());
+
+        verify(userRepository).findByEmail(email);
+        verify(tokenProvider).refreshToken(refreshToken);
+    }
+
+    @Test
+    void refreshToken_WithNonExistentEmail_ShouldThrowUserNotFoundException() {
+        
+        String email = "nonexistent@example.com";
+        String refreshToken = "Bearer refresh-token-123";
+
+        when(userRepository.findByEmail(email)).thenReturn(Optional.empty());
+
+        
+        assertThrows(UserNotFoundException.class, () -> {
+            authService.refreshToken(email, refreshToken);
+        });
+
+        verify(userRepository).findByEmail(email);
+        verify(tokenProvider, never()).refreshToken(anyString());
+    }
+
+    @Test
+    void refreshToken_WithEmptyEmail_ShouldThrowInvalidDataException() {
+        
+        String email = "";
+        String refreshToken = "Bearer refresh-token-123";
+
+        
+        assertThrows(InvalidDataException.class, () -> {
+            authService.refreshToken(email, refreshToken);
+        });
+
+        verify(userRepository, never()).findByEmail(anyString());
+        verify(tokenProvider, never()).refreshToken(anyString());
+    }
+
+    @Test
+    void refreshToken_WithNullEmail_ShouldThrowInvalidDataException() {
+        
+        String email = null;
+        String refreshToken = "Bearer refresh-token-123";
+
+        
+        assertThrows(InvalidDataException.class, () -> {
+            authService.refreshToken(email, refreshToken);
+        });
+
+        verify(userRepository, never()).findByEmail(anyString());
+        verify(tokenProvider, never()).refreshToken(anyString());
+    }
+
+    @Test
+    void refreshToken_WithEmptyRefreshToken_ShouldThrowInvalidDataException() {
+        
+        String email = "john@example.com";
+        String refreshToken = "";
+
+        
+        assertThrows(InvalidDataException.class, () -> {
+            authService.refreshToken(email, refreshToken);
+        });
+
+        verify(userRepository, never()).findByEmail(anyString());
+        verify(tokenProvider, never()).refreshToken(anyString());
+    }
+
+    @Test
+    void refreshToken_WithNullRefreshToken_ShouldThrowInvalidDataException() {
+        
+        String email = "john@example.com";
+        String refreshToken = null;
+
+        
+        assertThrows(InvalidDataException.class, () -> {
+            authService.refreshToken(email, refreshToken);
+        });
+
+        verify(userRepository, never()).findByEmail(anyString());
+        verify(tokenProvider, never()).refreshToken(anyString());
+    }
+
+    @Test
+    void refreshToken_WithDisabledUser_ShouldThrowRuntimeException() {
+        
+        String email = "john@example.com";
+        String refreshToken = "Bearer refresh-token-123";
+
+        User disabledUser = spy(user);
+        when(disabledUser.isEnabled()).thenReturn(false);
+
+        when(userRepository.findByEmail(email)).thenReturn(Optional.of(disabledUser));
+
+        
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+            authService.refreshToken(email, refreshToken);
+        });
+
+        assertEquals("User account is disabled", exception.getMessage());
+        verify(userRepository).findByEmail(email);
+        verify(tokenProvider, never()).refreshToken(anyString());
+    }
+
+    @Test
+    void refreshToken_WithLockedUser_ShouldThrowRuntimeException() {
+        
+        String email = "john@example.com";
+        String refreshToken = "Bearer refresh-token-123";
+
+        User lockedUser = spy(user);
+        when(lockedUser.isAccountNonLocked()).thenReturn(false);
+
+        when(userRepository.findByEmail(email)).thenReturn(Optional.of(lockedUser));
+
+        
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+            authService.refreshToken(email, refreshToken);
+        });
+
+        assertEquals("User account is locked", exception.getMessage());
+        verify(userRepository).findByEmail(email);
+        verify(tokenProvider, never()).refreshToken(anyString());
+    }
+
+    @Test
+    void refreshToken_WithExpiredAccount_ShouldThrowRuntimeException() {
+        
+        String email = "john@example.com";
+        String refreshToken = "Bearer refresh-token-123";
+
+        User expiredUser = spy(user);
+        when(expiredUser.isAccountNonExpired()).thenReturn(false);
+
+        when(userRepository.findByEmail(email)).thenReturn(Optional.of(expiredUser));
+
+        
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+            authService.refreshToken(email, refreshToken);
+        });
+
+        assertEquals("User account is expired", exception.getMessage());
+        verify(userRepository).findByEmail(email);
+        verify(tokenProvider, never()).refreshToken(anyString());
+    }
+
+    @Test
+    void refreshToken_WithExpiredCredentials_ShouldThrowRuntimeException() {
+        
+        String email = "john@example.com";
+        String refreshToken = "Bearer refresh-token-123";
+
+        User expiredCredUser = spy(user);
+        when(expiredCredUser.isCredentialsNonExpired()).thenReturn(false);
+
+        when(userRepository.findByEmail(email)).thenReturn(Optional.of(expiredCredUser));
+
+        
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+            authService.refreshToken(email, refreshToken);
+        });
+
+        assertEquals("User credentials are expired", exception.getMessage());
+        verify(userRepository).findByEmail(email);
+        verify(tokenProvider, never()).refreshToken(anyString());
+    }
+    @Test
+    void refreshToken_WhenTokenProviderReturnsNull_ShouldThrowInvalidRefreshTokenException() {
+        
+        String email = "john@example.com";
+        String refreshToken = "Bearer invalid-token";
+
+        when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
+        when(tokenProvider.refreshToken(refreshToken)).thenReturn(null);
+
+        
+        assertThrows(RuntimeException.class, () -> {
+            authService.refreshToken(email, refreshToken);
+        });
+
+        verify(userRepository).findByEmail(email);
+        verify(tokenProvider).refreshToken(refreshToken);
+    }
+
+    @Test
+    void refreshToken_WhenTokenProviderThrowsException_ShouldThrowRuntimeException() {
+        
+        String email = "john@example.com";
+        String refreshToken = "Bearer expired-token";
+
+        when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
+        when(tokenProvider.refreshToken(refreshToken)).thenThrow(new RuntimeException("Token expired"));
+
+        
+        assertThrows(RuntimeException.class, () -> {
+            authService.refreshToken(email, refreshToken);
+        });
+
+        verify(userRepository).findByEmail(email);
+        verify(tokenProvider).refreshToken(refreshToken);
     }
 }

@@ -4,8 +4,8 @@ import io.github.gabrielwederson.pay_scheduler_api.dto.SchedulingRequestDTO;
 import io.github.gabrielwederson.pay_scheduler_api.dto.SchedulingResponseDTO;
 import io.github.gabrielwederson.pay_scheduler_api.exception.AccountNotFound;
 import io.github.gabrielwederson.pay_scheduler_api.exception.InvalidDataException;
-import io.github.gabrielwederson.pay_scheduler_api.exception.SchedulingNotFound;
-import io.github.gabrielwederson.pay_scheduler_api.exception.UserNotFound;
+import io.github.gabrielwederson.pay_scheduler_api.exception.SchedulingNotFoundException;
+import io.github.gabrielwederson.pay_scheduler_api.exception.UserNotFoundException;
 import io.github.gabrielwederson.pay_scheduler_api.model.Account;
 import io.github.gabrielwederson.pay_scheduler_api.model.Scheduling;
 import io.github.gabrielwederson.pay_scheduler_api.model.Status;
@@ -21,9 +21,6 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-
-import static io.github.gabrielwederson.pay_scheduler_api.mapper.ObjectMapper.parseObjectMapper;
-import static io.github.gabrielwederson.pay_scheduler_api.mapper.ObjectMapper.parseListObjectMapper;
 
 @Service
 public class SchedulingService {
@@ -92,11 +89,11 @@ public class SchedulingService {
 
         String originEmail = accountRepository
                 .findUserEmailByAccountNumber(requestDTO.getOriginAccount())
-                .orElseThrow(() -> new UserNotFound("User of origin payment email not found"));
+                .orElseThrow(() -> new UserNotFoundException("User of origin payment email not found"));
 
         String destinationEmail = accountRepository
                 .findUserEmailByAccountNumber(requestDTO.getDestinationAccount())
-                .orElseThrow(() -> new UserNotFound("User of destination payment email not found"));
+                .orElseThrow(() -> new UserNotFoundException("User of destination payment email not found"));
 
         emailService.sendEmail(originEmail, subject, emailBody);
         emailService.sendEmail(destinationEmail, subject, emailBody);
@@ -115,7 +112,7 @@ public class SchedulingService {
     public void delete(Long id) {
         logger.info("Deleting Scheduling");
         Scheduling entity = schedulingRepository.findByStatusAndId(id, Status.PENDING)
-                .orElseThrow(() -> new SchedulingNotFound("Scheduling not found or not in PENDING status"));
+                .orElseThrow(() -> new SchedulingNotFoundException("Scheduling not found or not in PENDING status"));
 
         schedulerService.cancelScheduledJob(id);
         schedulingRepository.delete(entity);

@@ -6,7 +6,7 @@ import io.github.gabrielwederson.pay_scheduler_api.dto.SignInRequestDTO;
 import io.github.gabrielwederson.pay_scheduler_api.dto.security.TokenDTO;
 import io.github.gabrielwederson.pay_scheduler_api.exception.InvalidDataException;
 import io.github.gabrielwederson.pay_scheduler_api.exception.InvalidRefreshTokenException;
-import io.github.gabrielwederson.pay_scheduler_api.exception.UserNotFound;
+import io.github.gabrielwederson.pay_scheduler_api.exception.UserNotFoundException;
 import io.github.gabrielwederson.pay_scheduler_api.model.Account;
 import io.github.gabrielwederson.pay_scheduler_api.model.User;
 import io.github.gabrielwederson.pay_scheduler_api.repository.AccountRepository;
@@ -104,7 +104,7 @@ public class AuthService {
         validateParameters(email, refreshToken);
 
         var user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UserNotFound("Email not found!"));
+                .orElseThrow(() -> new UserNotFoundException("Email not found!"));
 
         validateUserStatus(user);
 

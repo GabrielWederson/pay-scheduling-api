@@ -1,6 +1,6 @@
 package io.github.gabrielwederson.pay_scheduler_api.service;
 
-import io.github.gabrielwederson.pay_scheduler_api.exception.UserNotFound;
+import io.github.gabrielwederson.pay_scheduler_api.exception.UserNotFoundException;
 import io.github.gabrielwederson.pay_scheduler_api.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -17,6 +17,6 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         return userRepository.findByEmail(email)
-                .orElseThrow(() -> new UserNotFound("User not found with this email"));
+                .orElseThrow(() -> new UserNotFoundException("User not found with this email"));
     }
 }
