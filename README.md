@@ -11,7 +11,7 @@ A robust REST API for scheduling and executing future bank transfers with fund r
 - **Spring Security** with JWT
 - **Spring Data JPA** with Hibernate
 - **MySQL**
-- **JUnit 5 & Mockito** (85% code coverage)
+- **JUnit 5 & Mockito** 
 - **Swagger/OpenAPI 3** (API documentation)
 - **Java Mail Sender** (SMTP)
 - **Maven**
@@ -150,7 +150,7 @@ availableBalance = 70.00
 
 ## 🧪 Testing
 
-- **85% code coverage** with JUnit 5 and Mockito
+- JUnit 5 and Mockito
 - Unit tests for services and controllers
 - Integration tests for repositories
 - Security tests for role-based access
@@ -249,7 +249,6 @@ This project is for educational purposes.
 
 ## 📊 Key Achievements
 
-- ✅ **85% test coverage** ensuring reliability
 - ✅ **41ms email sending** – 99.5% faster than sync approach
 - ✅ **Race condition prevention** with pessimistic locks
 - ✅ **Complete JWT security** with refresh tokens
